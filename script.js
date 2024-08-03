@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   console.log('Begins fg script');
   const form = document.querySelector('form[id^="hsForm_"]');
 
-  if (form) {
+  if (typeof form !== 'undefined' && form !== null) {
     console.log('Form found:', form);
     form.addEventListener('submit', function (event) {
       event.preventDefault(); // Stop the form from submitting immediately
