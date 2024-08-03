@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Begins fg script');
   const form = document.querySelector('form[id^="hsForm_"]');
+  console.log('form:', form);
 
   if (typeof form !== 'undefined' && form !== null) {
     console.log('Form found:', form);
