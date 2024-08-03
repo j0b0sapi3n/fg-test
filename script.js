@@ -1,10 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Begins fg script');
-  const form = document.querySelector('form[id^="hsForm_"]');
-  console.log('form:', form);
+  function waitForForm() {
+    return new Promise((resolve) => {
+      const checkForm = setInterval(() => {
+        const form = document.querySelector('form[id^="hsForm_"]');
+        console.log('form:', form);
+        if (form) {
+          clearInterval(checkForm);
+          resolve(form);
+        }
+      }, 100); // Check every 100ms
+    });
+  }
 
-  if (typeof form !== 'undefined' && form !== null) {
-    console.log('Form found:', form);
+  waitForForm().then((form) => {
     form.addEventListener('submit', function (event) {
       event.preventDefault(); // Stop the form from submitting immediately
 
@@ -44,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
     });
-  }
+  });
 });
 
 // Placeholder spam check function
