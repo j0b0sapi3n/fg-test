@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   waitForForm().then((form) => {
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async function (event) {
       event.preventDefault(); // Stop the form from submitting immediately
 
       // Collect form data
@@ -25,33 +25,38 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       // Perform your spam check
-      checkForSpam(data).then(({ isSpam, reasons, score }) => {
+      // Perform your spam check
+      try {
+        const { isSpam, reasons, score } = await checkForSpam(data);
+
         if (isSpam) {
           console.log('Spam detected for the following reasons:', reasons);
           alert('This submission appears to be spam.');
-        } else {
-          console.log('Not spam. Proceeding with form submission.');
-          // If not spam, create an XMLHttpRequest to submit the form data
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', form.action, true);
-          xhr.setRequestHeader(
-            'Content-Type',
-            'application/x-www-form-urlencoded'
-          );
-
-          // Convert the form data back to URL-encoded string
-          const urlEncodedData = new URLSearchParams(formData).toString();
-
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-              alert('Form submitted successfully!');
-              form.reset(); // Optional: reset the form after successful submission
-            }
-          };
-
-          xhr.send(urlEncodedData);
+          return; // Exit the function to prevent form submission
         }
-      });
+
+        // If not spam, create an XMLHttpRequest to submit the form data
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.setRequestHeader(
+          'Content-Type',
+          'application/x-www-form-urlencoded'
+        );
+
+        // Convert the form data back to URL-encoded string
+        const urlEncodedData = new URLSearchParams(formData).toString();
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            alert('Form submitted successfully!');
+            form.reset(); // Optional: reset the form after successful submission
+          }
+        };
+
+        xhr.send(urlEncodedData);
+      } catch (error) {
+        console.error('Error during spam check:', error);
+      }
     });
   });
 });
