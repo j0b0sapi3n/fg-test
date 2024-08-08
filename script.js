@@ -484,7 +484,6 @@ function checkForSpam(data) {
     score += name_unknown(data, reasons);
     score += title_irregular(data, reasons);
     score += title_unknown(data, reasons);
-    score += phone_irregular(data, reasons);
     score += company_irregular(data, reasons);
 
     const isSpam = score > 0;
