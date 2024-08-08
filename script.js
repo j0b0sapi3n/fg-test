@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
           console.log('Spam detected for the following reasons:', reasons);
           alert('This submission appears to be spam.');
         } else {
+          console.log('Not spam. Proceeding with form submission.');
           // If not spam, create an XMLHttpRequest to submit the form data
           const xhr = new XMLHttpRequest();
           xhr.open('POST', form.action, true);
@@ -486,7 +487,7 @@ function checkForSpam(data) {
     score += title_unknown(data, reasons);
     score += company_irregular(data, reasons);
 
-    const isSpam = score > 0;
+    const isSpam = score > 2;
     resolve({ isSpam, reasons, score });
   });
 }
