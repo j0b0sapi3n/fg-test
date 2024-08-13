@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
           return; // Exit the function to prevent form submission
         }
 
+        console.log('Begin code below isSpam if condition');
         // If not spam, create an XMLHttpRequest to submit the form data
         const xhr = new XMLHttpRequest();
         xhr.open('POST', form.action, true);
