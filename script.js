@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   waitForForm().then((form) => {
     form.addEventListener('submit', async function (event) {
       event.preventDefault(); // Stop the form from submitting immediately
+      event.stopImmediatePropagation();
 
       // Collect form data
       const formData = new FormData(form);
