@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   waitForForm().then((form) => {
+    console.log('Form found:', form);
+
     form.addEventListener('submit', async function (event) {
       event.preventDefault(); // Stop the form from submitting immediately
       event.stopImmediatePropagation(); // Prevent other listeners on submit from submitting
