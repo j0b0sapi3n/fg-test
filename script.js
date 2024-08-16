@@ -1,4 +1,4 @@
-import { checkForSpam } from './checkForSpam.js';
+const { checkForSpam } = require('./checkForSpam.js');
 
 document.addEventListener('DOMContentLoaded', function () {
   function waitForForm() {
