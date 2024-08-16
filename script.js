@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
       event.preventDefault(); // Stop the form from submitting immediately
       event.stopImmediatePropagation(); // Prevent other listeners on submit from submitting
 
+      console.log('Gets inside waitForForm');
+
       // Collect form data
       const formData = new FormData(form);
 
@@ -27,9 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
         data[key] = value;
       });
 
+      console.log('form data: :', data);
+
       // Perform your spam check
       try {
         const { isSpam, reasons, score } = await checkForSpam(data);
+        console.log('isSpam:  ', isSpam);
 
         if (isSpam) {
           console.log('Spam detected for the following reasons:', reasons);
