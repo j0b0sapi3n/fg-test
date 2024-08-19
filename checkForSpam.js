@@ -368,7 +368,7 @@ function name_unknown(data, reasons) {
 }
 
 function title_irregular(data, reasons) {
-  const title = data.jobtitle;
+  const title = data.title;
   if (title.length && is_irregular(title)) {
     reasons.push('Title irregular');
     return 1; // ISSUE DETECTED
@@ -386,10 +386,7 @@ const corporate_titles = new Set([
 ]);
 
 function title_unknown(data, reasons) {
-  const titleTokens = data.jobtitle
-    .toLowerCase()
-    .split(' ')
-    .map(strip_non_alpha);
+  const titleTokens = data.title.toLowerCase().split(' ').map(strip_non_alpha);
   if (!titleTokens.some((token) => corporate_titles.has(token))) {
     reasons.push('Title unknown');
     return 1; // ISSUE DETECTED

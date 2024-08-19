@@ -2,52 +2,45 @@ import { checkForSpam } from './checkForSpam.js';
 import fs from 'fs';
 import csv from 'csv-parser';
 
-function testSpamChecker(csvFilePath) {
-  const results = [];
-
-  fs.createReadStream(csvFilePath)
-    .pipe(csv())
-    .on('data', (row) => {
-      const formSubmission = {
-        text: row.message,
-        // Include other form fields from the CSV as needed
-      };
-
-      const { spamScore, reasons } = checkForSpam(formSubmission);
-      const isSpam = spamScore > 0 ? 'spam' : 'clean';
-      const manualRating = row.manual_rating.trim().toLowerCase();
-
-      results.push({
-        submission: row,
-        isSpam,
-        manualRating,
-        correct: isSpam === manualRating,
-        reasons,
-      });
-    })
-    .on('end', () => {
-      const total = results.length;
-      const correct = results.filter((result) => result.correct).length;
-      console.log(
-        `Correct classifications: ${correct}/${total} (${
-          (correct / total) * 100
-        }%)`
-      );
-
-      results.forEach((result) => {
-        if (!result.correct) {
-          console.log(
-            `Incorrect classification: ${JSON.stringify(
-              result.submission
-            )}\nExpected: ${result.manualRating}, Got: ${
-              result.isSpam
-            }\nReasons: ${result.reasons.join(', ')}`
-          );
-        }
-      });
-    });
+function loadCSV(filePath) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (error) => reject(error));
+  });
 }
 
-// Example usage: testSpamChecker('submissions.csv');
+async function testSpamChecker(filePath) {
+  try {
+    const submissions = await loadCSV(filePath);
+    let correct = 0;
+    let incorrect = 0;
 
-testSpamChecker('submissions.csv');
+    submissions.forEach((submission) => {
+      const { score_manual, ...formData } = submission;
+      const { isSpam } = checkForSpam(formData);
+
+      if (
+        (isSpam && score_manual === 'spam') ||
+        (!isSpam && score_manual === 'clean')
+      ) {
+        correct++;
+      } else {
+        incorrect++;
+      }
+    });
+
+    console.log(`Correct detections: ${correct}`);
+    console.log(`Incorrect detections: ${incorrect}`);
+    console.log(`Accuracy: ${(correct / submissions.length) * 100}%`);
+  } catch (error) {
+    console.error('Error during testing:', error);
+  }
+}
+
+// Run the test
+const csvFilePath = './test_data/tarryn_1.csv';
+testSpamChecker(csvFilePath);
