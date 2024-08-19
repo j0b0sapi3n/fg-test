@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 // Utility functions
 function vowels_regex(text) {
   return text.match(/[aeiouAEIOU]/g) || [];
@@ -25,317 +27,359 @@ function strip_non_alpha(text) {
 }
 
 function strip_non_numerical(string) {
-  return string.replace(/[^\d]/g, '');
+  return string ? string.replace(/[^\d]/g, '') : ''; // Return an empty string if undefined
 }
 
 // Spam check functions
-function email_mismatch(data, reasons) {
-  const fn = data.firstname.toLowerCase().trim();
-  const ln = data.lastname.toLowerCase().trim();
+// function email_mismatch(data, reasons) {
+//   const fn = data.firstname.toLowerCase().trim();
+//   const ln = data.lastname.toLowerCase().trim();
+//   const email = data.email.toLowerCase();
+//   if (!(email.includes(fn) || email.includes(ln))) {
+//     reasons.push('Email mismatch with name');
+//     return 1; // ISSUE DETECTED
+//   }
+//   return 0;
+// }
+
+// function email_host_irregular(data, reasons) {
+//   const email = data.email.toLowerCase(); // someemail@abc.live.com
+//   const host = email.split('@')[1].split('.').slice(0, -1).join('.'); // abc.live
+
+//   if (
+//     host.length < 3 ||
+//     (host.length > 4 && vowels_regex(host).length < 1) ||
+//     ['abc', 'asdf', 'qwer'].includes(host)
+//   ) {
+//     reasons.push('Email host irregular');
+//     return 1; // ISSUE DETECTED
+//   }
+//   return 0; // NO ISSUE DETECTED
+// }
+
+// const tlds = [
+//   'com',
+//   'net',
+//   'org',
+//   'info',
+//   'biz',
+//   'edu',
+//   'gov',
+//   'mil',
+//   'int',
+//   'name',
+//   'pro',
+//   'aero',
+//   'coop',
+//   'museum',
+//   'asia',
+//   'cat',
+//   'jobs',
+//   'mobi',
+//   'tel',
+//   'travel',
+//   'xxx',
+//   'ac',
+//   'ad',
+//   'ae',
+//   'af',
+//   'ag',
+//   'ai',
+//   'al',
+//   'am',
+//   'an',
+//   'ao',
+//   'aq',
+//   'ar',
+//   'as',
+//   'at',
+//   'au',
+//   'aw',
+//   'ax',
+//   'az',
+//   'ba',
+//   'bb',
+//   'bd',
+//   'be',
+//   'bf',
+//   'bg',
+//   'bh',
+//   'bi',
+//   'bj',
+//   'bm',
+//   'bn',
+//   'bo',
+//   'br',
+//   'bs',
+//   'bt',
+//   'bv',
+//   'bw',
+//   'by',
+//   'bz',
+//   'ca',
+//   'cc',
+//   'cd',
+//   'cf',
+//   'cg',
+//   'ch',
+//   'ci',
+//   'ck',
+//   'cl',
+//   'cm',
+//   'cn',
+//   'co',
+//   'cr',
+//   'cu',
+//   'cv',
+//   'cw',
+//   'cx',
+//   'cy',
+//   'cz',
+//   'de',
+//   'dj',
+//   'dk',
+//   'dm',
+//   'do',
+//   'dz',
+//   'ec',
+//   'ee',
+//   'eg',
+//   'er',
+//   'es',
+//   'et',
+//   'eu',
+//   'fi',
+//   'fj',
+//   'fk',
+//   'fm',
+//   'fo',
+//   'fr',
+//   'ga',
+//   'gb',
+//   'gd',
+//   'ge',
+//   'gf',
+//   'gg',
+//   'gh',
+//   'gi',
+//   'gl',
+//   'gm',
+//   'gn',
+//   'gp',
+//   'gq',
+//   'gr',
+//   'gs',
+//   'gt',
+//   'gu',
+//   'gw',
+//   'gy',
+//   'hk',
+//   'hm',
+//   'hn',
+//   'hr',
+//   'ht',
+//   'hu',
+//   'id',
+//   'ie',
+//   'il',
+//   'im',
+//   'in',
+//   'io',
+//   'iq',
+//   'ir',
+//   'is',
+//   'it',
+//   'je',
+//   'jm',
+//   'jo',
+//   'jp',
+//   'ke',
+//   'kg',
+//   'kh',
+//   'ki',
+//   'km',
+//   'kn',
+//   'kp',
+//   'kr',
+//   'kw',
+//   'ky',
+//   'kz',
+//   'la',
+//   'lb',
+//   'lc',
+//   'li',
+//   'lk',
+//   'lr',
+//   'ls',
+//   'lt',
+//   'lu',
+//   'lv',
+//   'ly',
+//   'ma',
+//   'mc',
+//   'md',
+//   'me',
+//   'mg',
+//   'mh',
+//   'mk',
+//   'ml',
+//   'mm',
+//   'mn',
+//   'mo',
+//   'mp',
+//   'mq',
+//   'mr',
+//   'ms',
+//   'mt',
+//   'mu',
+//   'mv',
+//   'mw',
+//   'mx',
+//   'my',
+//   'mz',
+//   'na',
+//   'nc',
+//   'ne',
+//   'nf',
+//   'ng',
+//   'ni',
+//   'nl',
+//   'no',
+//   'np',
+//   'nr',
+//   'nu',
+//   'nz',
+//   'om',
+//   'pa',
+//   'pe',
+//   'pf',
+//   'pg',
+//   'ph',
+//   'pk',
+//   'pl',
+//   'pm',
+//   'pn',
+//   'pr',
+//   'ps',
+//   'pt',
+//   'pw',
+//   'py',
+//   'qa',
+//   're',
+//   'ro',
+//   'rs',
+//   'ru',
+//   'rw',
+//   'sa',
+//   'sb',
+//   'sc',
+//   'sd',
+//   'se',
+//   'sg',
+//   'sh',
+//   'si',
+//   'sj',
+//   'sk',
+//   'sl',
+//   'sm',
+//   'sn',
+//   'so',
+//   'sr',
+//   'ss',
+//   'st',
+//   'sv',
+//   'sx',
+//   'sy',
+//   'sz',
+//   'tc',
+//   'td',
+//   'tf',
+//   'tg',
+//   'th',
+//   'tj',
+//   'tk',
+//   'tl',
+//   'tm',
+//   'tn',
+//   'to',
+//   'tr',
+//   'tt',
+//   'tv',
+//   'tw',
+//   'tz',
+//   'ua',
+//   'ug',
+//   'uk',
+//   'us',
+//   'uy',
+//   'uz',
+//   'va',
+//   'vc',
+//   've',
+//   'vg',
+//   'vi',
+//   'vn',
+//   'vu',
+//   'wf',
+//   'ws',
+//   'ye',
+//   'yt',
+//   'za',
+//   'zm',
+//   'zw',
+// ];
+
+// function email_domain_irregular(data, reasons) {
+//   const email = data.email.toLowerCase(); // someemail@abc.live.com
+//   const domain = email.split('@')[1].split('.').pop(); // com
+//   if (!tlds.includes(domain)) {
+//     reasons.push('Email domain irregular');
+//     return 1; // ISSUE DETECTED
+//   }
+//   return 0;
+// }
+
+export const email_validate = async (data, reasons) => {
+  const apiKey = '7ef44d64-27d1-4066-9b81-7a48e554fc5a';
   const email = data.email.toLowerCase();
-  if (!(email.includes(fn) || email.includes(ln))) {
-    reasons.push('Email mismatch with name');
-    return 1; // ISSUE DETECTED
+
+  try {
+    const response = await fetch(
+      `https://api.mails.so/v1/validate?email=${email}`,
+      {
+        method: 'GET',
+        headers: {
+          'x-mails-api-key': apiKey,
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.error) {
+      reasons.push('Email validation error: ' + result.error);
+      return 1;
+    }
+
+    const { result: validationResult, reason, score } = result.data;
+
+    if (validationResult === 'undeliverable') {
+      reasons.push(`Email validation failed: ${reason}`);
+      return 1;
+    }
+
+    if (score < 70) {
+      reasons.push('Email validation score is too low.');
+      return 1;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error('Error during email validation:', error);
+    reasons.push('Error occurred during email validation.');
+    return 1; // In case of error, we might consider it suspicious and increase the score
   }
-  return 0;
-}
-
-function email_host_irregular(data, reasons) {
-  const email = data.email.toLowerCase(); // someemail@abc.live.com
-  const host = email.split('@')[1].split('.').slice(0, -1).join('.'); // abc.live
-
-  if (
-    host.length < 3 ||
-    (host.length > 4 && vowels_regex(host).length < 1) ||
-    ['abc', 'asdf', 'qwer'].includes(host)
-  ) {
-    reasons.push('Email host irregular');
-    return 1; // ISSUE DETECTED
-  }
-  return 0; // NO ISSUE DETECTED
-}
-
-const tlds = [
-  'com',
-  'net',
-  'org',
-  'info',
-  'biz',
-  'edu',
-  'gov',
-  'mil',
-  'int',
-  'name',
-  'pro',
-  'aero',
-  'coop',
-  'museum',
-  'asia',
-  'cat',
-  'jobs',
-  'mobi',
-  'tel',
-  'travel',
-  'xxx',
-  'ac',
-  'ad',
-  'ae',
-  'af',
-  'ag',
-  'ai',
-  'al',
-  'am',
-  'an',
-  'ao',
-  'aq',
-  'ar',
-  'as',
-  'at',
-  'au',
-  'aw',
-  'ax',
-  'az',
-  'ba',
-  'bb',
-  'bd',
-  'be',
-  'bf',
-  'bg',
-  'bh',
-  'bi',
-  'bj',
-  'bm',
-  'bn',
-  'bo',
-  'br',
-  'bs',
-  'bt',
-  'bv',
-  'bw',
-  'by',
-  'bz',
-  'ca',
-  'cc',
-  'cd',
-  'cf',
-  'cg',
-  'ch',
-  'ci',
-  'ck',
-  'cl',
-  'cm',
-  'cn',
-  'co',
-  'cr',
-  'cu',
-  'cv',
-  'cw',
-  'cx',
-  'cy',
-  'cz',
-  'de',
-  'dj',
-  'dk',
-  'dm',
-  'do',
-  'dz',
-  'ec',
-  'ee',
-  'eg',
-  'er',
-  'es',
-  'et',
-  'eu',
-  'fi',
-  'fj',
-  'fk',
-  'fm',
-  'fo',
-  'fr',
-  'ga',
-  'gb',
-  'gd',
-  'ge',
-  'gf',
-  'gg',
-  'gh',
-  'gi',
-  'gl',
-  'gm',
-  'gn',
-  'gp',
-  'gq',
-  'gr',
-  'gs',
-  'gt',
-  'gu',
-  'gw',
-  'gy',
-  'hk',
-  'hm',
-  'hn',
-  'hr',
-  'ht',
-  'hu',
-  'id',
-  'ie',
-  'il',
-  'im',
-  'in',
-  'io',
-  'iq',
-  'ir',
-  'is',
-  'it',
-  'je',
-  'jm',
-  'jo',
-  'jp',
-  'ke',
-  'kg',
-  'kh',
-  'ki',
-  'km',
-  'kn',
-  'kp',
-  'kr',
-  'kw',
-  'ky',
-  'kz',
-  'la',
-  'lb',
-  'lc',
-  'li',
-  'lk',
-  'lr',
-  'ls',
-  'lt',
-  'lu',
-  'lv',
-  'ly',
-  'ma',
-  'mc',
-  'md',
-  'me',
-  'mg',
-  'mh',
-  'mk',
-  'ml',
-  'mm',
-  'mn',
-  'mo',
-  'mp',
-  'mq',
-  'mr',
-  'ms',
-  'mt',
-  'mu',
-  'mv',
-  'mw',
-  'mx',
-  'my',
-  'mz',
-  'na',
-  'nc',
-  'ne',
-  'nf',
-  'ng',
-  'ni',
-  'nl',
-  'no',
-  'np',
-  'nr',
-  'nu',
-  'nz',
-  'om',
-  'pa',
-  'pe',
-  'pf',
-  'pg',
-  'ph',
-  'pk',
-  'pl',
-  'pm',
-  'pn',
-  'pr',
-  'ps',
-  'pt',
-  'pw',
-  'py',
-  'qa',
-  're',
-  'ro',
-  'rs',
-  'ru',
-  'rw',
-  'sa',
-  'sb',
-  'sc',
-  'sd',
-  'se',
-  'sg',
-  'sh',
-  'si',
-  'sj',
-  'sk',
-  'sl',
-  'sm',
-  'sn',
-  'so',
-  'sr',
-  'ss',
-  'st',
-  'sv',
-  'sx',
-  'sy',
-  'sz',
-  'tc',
-  'td',
-  'tf',
-  'tg',
-  'th',
-  'tj',
-  'tk',
-  'tl',
-  'tm',
-  'tn',
-  'to',
-  'tr',
-  'tt',
-  'tv',
-  'tw',
-  'tz',
-  'ua',
-  'ug',
-  'uk',
-  'us',
-  'uy',
-  'uz',
-  'va',
-  'vc',
-  've',
-  'vg',
-  'vi',
-  'vn',
-  'vu',
-  'wf',
-  'ws',
-  'ye',
-  'yt',
-  'za',
-  'zm',
-  'zw',
-];
-
-function email_domain_irregular(data, reasons) {
-  const email = data.email.toLowerCase(); // someemail@abc.live.com
-  const domain = email.split('@')[1].split('.').pop(); // com
-  if (!tlds.includes(domain)) {
-    reasons.push('Email domain irregular');
-    return 1; // ISSUE DETECTED
-  }
-  return 0;
-}
+};
 
 function name_irregular(data, reasons) {
   const fn = data.firstname.toLowerCase().trim();
@@ -412,23 +456,25 @@ function company_irregular(data, reasons) {
   return 0;
 }
 
-function checkForSpam(data) {
-  return new Promise((resolve) => {
-    let score = 0;
-    const reasons = [];
+export const checkForSpam = async (data) => {
+  let score = 0;
+  const reasons = [];
 
-    score += email_mismatch(data, reasons);
-    score += email_host_irregular(data, reasons);
-    score += email_domain_irregular(data, reasons);
-    score += name_irregular(data, reasons);
-    score += name_unknown(data, reasons);
-    score += title_irregular(data, reasons);
-    score += title_unknown(data, reasons);
-    score += company_irregular(data, reasons);
+  // These functions are synchronous and will execute immediately
+  // score += email_mismatch(data, reasons);
+  // score += email_host_irregular(data, reasons);
+  // score += email_domain_irregular(data, reasons);
+  score += name_irregular(data, reasons);
+  score += name_unknown(data, reasons);
+  score += title_irregular(data, reasons);
+  score += title_unknown(data, reasons);
+  score += company_irregular(data, reasons);
+  score += phone_irregular(data, reasons);
 
-    const isSpam = score > 2;
-    resolve({ isSpam, reasons, score });
-  });
-}
+  // This is the asynchronous function
+  const emailScore = await email_validate(data, reasons);
+  score += emailScore;
 
-export { checkForSpam };
+  const isSpam = score > 2;
+  return { isSpam, reasons, score };
+};

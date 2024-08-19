@@ -19,9 +19,16 @@ async function testSpamChecker(filePath) {
     let correct = 0;
     let incorrect = 0;
 
-    submissions.forEach((submission) => {
+    for (const submission of submissions) {
       const { score_manual, ...formData } = submission;
-      const { isSpam } = checkForSpam(formData);
+      const { isSpam, score, reasons } = await checkForSpam(formData);
+
+      // Output the data for each submission
+      console.log('Submission Data:', formData);
+      console.log('isSpam:', isSpam);
+      console.log('Spam Score:', score);
+      console.log('Reasons:', reasons.join(', ') || 'No specific reasons');
+      console.log('--------------------------');
 
       if (
         (isSpam && score_manual === 'spam') ||
@@ -31,7 +38,7 @@ async function testSpamChecker(filePath) {
       } else {
         incorrect++;
       }
-    });
+    }
 
     console.log(`Correct detections: ${correct}`);
     console.log(`Incorrect detections: ${incorrect}`);
@@ -42,5 +49,5 @@ async function testSpamChecker(filePath) {
 }
 
 // Run the test
-const csvFilePath = './test_data/tarryn_1.csv';
+const csvFilePath = './test_data/basic.csv';
 testSpamChecker(csvFilePath);
