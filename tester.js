@@ -49,5 +49,5 @@ async function testSpamChecker(filePath) {
 }
 
 // Run the test
-const csvFilePath = './test_data/basic.csv';
+const csvFilePath = './test_data/basic2.csv';
 testSpamChecker(csvFilePath);
