@@ -50,19 +50,22 @@ export const email_validate = async (data, reasons) => {
 
     if (result.error) {
       reasons.push('Email validation error: ' + result.error);
-      return 1;
+      return 2;
     }
 
     const { result: validationResult, reason, score } = result.data;
 
     if (validationResult === 'undeliverable') {
       reasons.push(`Email validation failed: ${reason}`);
-      return 1;
+      return 2;
     }
 
-    if (score < 70) {
-      reasons.push('Email validation score is too low.');
+    if (score < 80 && score >= 70) {
+      reasons.push('Email validation score is low.');
       return 1;
+    } else if (score < 70) {
+      reasons.push('Email validation score is very low.');
+      return 2;
     }
 
     return 0;
@@ -76,7 +79,7 @@ export const email_validate = async (data, reasons) => {
 function name_irregular(data, reasons) {
   const fn = data.firstname.toLowerCase().trim();
   const ln = data.lastname.toLowerCase().trim();
-  if ((fn.length && is_irregular(fn)) || (ln.length && is_irregular(ln))) {
+  if ((fn.length && (is_irregular(fn) || /\d/.test(fn))) || (ln.length && (is_irregular(ln) || /\d/.test(ln)))) {
     reasons.push('Name irregular');
     return 1; // ISSUE DETECTED
   }
@@ -85,17 +88,8 @@ function name_irregular(data, reasons) {
 
 function title_irregular(data, reasons) {
   const title = data.title;
-  if (title.length && is_irregular(title)) {
+  if (title.length && (is_irregular(title) || (title.match(/\d/g) || []).length > 1)) {
     reasons.push('Title irregular');
-    return 1; // ISSUE DETECTED
-  }
-  return 0;
-}
-
-function phone_irregular(data, reasons) {
-  const phone = strip_non_numerical(data.phone);
-  if (phone && ![10, 12].includes(phone.length)) {
-    reasons.push('Phone irregular');
     return 1; // ISSUE DETECTED
   }
   return 0;
@@ -110,18 +104,23 @@ function company_irregular(data, reasons) {
   return 0;
 }
 
+function phone_irregular(data, reasons) {
+  const phone = strip_non_numerical(data.phone);
+  if (phone && ![10, 12].includes(phone.length)) {
+    reasons.push('Phone irregular');
+    return 1; // ISSUE DETECTED
+  }
+  return 0;
+}
+
+
 export const checkForSpam = async (data) => {
   let score = 0;
   const reasons = [];
 
   // These functions are synchronous and will execute immediately
-  // score += email_mismatch(data, reasons);
-  // score += email_host_irregular(data, reasons);
-  // score += email_domain_irregular(data, reasons);
   score += name_irregular(data, reasons);
-  score += name_unknown(data, reasons);
   score += title_irregular(data, reasons);
-  score += title_unknown(data, reasons);
   score += company_irregular(data, reasons);
   score += phone_irregular(data, reasons);
 
