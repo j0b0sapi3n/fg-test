@@ -25,6 +25,7 @@ async function testSpamChecker(filePath) {
 
       // Output the data for each submission
       console.log('Submission Data:', formData);
+      console.log('Manual Score:', score_manual);
       console.log('isSpam:', isSpam);
       console.log('Spam Score:', score);
       console.log('Reasons:', reasons.join(', ') || 'No specific reasons');

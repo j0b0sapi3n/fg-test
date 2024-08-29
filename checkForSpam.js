@@ -19,6 +19,12 @@ function is_irregular(text) {
     // IF VOWEL RATIO IS TOO LOW
     return true;
   }
+
+  if (text.toLowerCase().includes("test")) {
+    // IF TEXT INCLUDES "TEST"
+    return true;
+  }
+
   return false;
 }
 
@@ -112,7 +118,6 @@ function phone_irregular(data, reasons) {
   }
   return 0;
 }
-
 
 export const checkForSpam = async (data) => {
   let score = 0;
