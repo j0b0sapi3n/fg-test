@@ -66,10 +66,10 @@ export const email_validate = async (data, reasons) => {
       return 2;
     }
 
-    if (score < 80 && score >= 70) {
+    if (score < 80 && score >= 40) {
       reasons.push('Email validation score is low.');
       return 1;
-    } else if (score < 70) {
+    } else if (score < 40) {
       reasons.push('Email validation score is very low.');
       return 2;
     }
@@ -94,7 +94,12 @@ function name_irregular(data, reasons) {
 
 function title_irregular(data, reasons) {
   const title = data.title;
-  if (title.length && (is_irregular(title) || (title.match(/\d/g) || []).length > 1)) {
+  const numberCount = (title.match(/\d/g) || []).length;
+  if (title.length && (is_irregular(title) || numberCount > 1)) {
+    if (numberCount > 2) {
+      reasons.push('Title irregular with extra numbers');
+      return 2; // INCREASED ISSUE SEVERITY
+    }
     reasons.push('Title irregular');
     return 1; // ISSUE DETECTED
   }
@@ -102,11 +107,20 @@ function title_irregular(data, reasons) {
 }
 
 function company_irregular(data, reasons) {
-  const company = strip_non_alpha(data.company.toLowerCase().trim());
-  if (company.length && is_irregular(company)) {
+  const company = data.company.toLowerCase().trim();
+  const companyAlpha = strip_non_alpha(company);
+  const numberCount = (company.match(/\d/g) || []).length;
+
+  if (numberCount >= 4) {
+    reasons.push('Company name contains 4 or more numbers');
+    return 2; // INCREASED ISSUE SEVERITY
+  }
+
+  if (companyAlpha.length && is_irregular(companyAlpha)) {
     reasons.push('Company irregular');
     return 1; // ISSUE DETECTED
   }
+
   return 0;
 }
 

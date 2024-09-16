@@ -29,7 +29,6 @@ async function testSpamChecker(filePath) {
       console.log('isSpam:', isSpam);
       console.log('Spam Score:', score);
       console.log('Reasons:', reasons.join(', ') || 'No specific reasons');
-      console.log('--------------------------');
 
       if (
         (isSpam && score_manual === 'spam') ||
@@ -38,7 +37,10 @@ async function testSpamChecker(filePath) {
         correct++;
       } else {
         incorrect++;
+        console.log('\x1b[31m%s\x1b[0m', '*** DIFFERENT RESULT ***');
       }
+
+      console.log('--------------------------\n');
     }
 
     console.log(`Correct detections: ${correct}`);
@@ -49,6 +51,6 @@ async function testSpamChecker(filePath) {
   }
 }
 
-// Run the test
-const csvFilePath = './test_data/basic2.csv';
+// Update the script to use command-line argument
+const csvFilePath = process.argv[2] || './test_data/basic2.csv';
 testSpamChecker(csvFilePath);
