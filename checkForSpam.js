@@ -67,10 +67,10 @@ export const email_validate = async (data, reasons) => {
     }
 
     if (score < 80 && score >= 40) {
-      reasons.push('Email validation score is low.');
+      reasons.push(`Email validation score is low: ${score}`);
       return 1;
     } else if (score < 40) {
-      reasons.push('Email validation score is very low.');
+      reasons.push(`Email validation score is very low: ${score}`);
       return 2;
     }
 

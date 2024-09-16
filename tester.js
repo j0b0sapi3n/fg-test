@@ -18,34 +18,67 @@ async function testSpamChecker(filePath) {
     const submissions = await loadCSV(filePath);
     let correct = 0;
     let incorrect = 0;
+    let score0 = [];
+    let score0to2 = [];
+    let score2plus = [];
+    let differentRatings = [];
 
-    for (const submission of submissions) {
+    console.log(`Processing ${submissions.length} submissions...`);
+
+    for (let i = 0; i < submissions.length; i++) {
+      const submission = submissions[i];
       const { score_manual, ...formData } = submission;
       const { isSpam, score, reasons } = await checkForSpam(formData);
 
-      // Output the data for each submission
-      console.log('Submission Data:', formData);
-      console.log('Manual Score:', score_manual);
-      console.log('isSpam:', isSpam);
-      console.log('Spam Score:', score);
-      console.log('Reasons:', reasons.join(', ') || 'No specific reasons');
+      // Show progress
+      console.log(`Processed ${i + 1}/${submissions.length} submissions`);
 
-      if (
-        (isSpam && score_manual === 'spam') ||
-        (!isSpam && score_manual === 'clean')
-      ) {
+      // Categorize submissions based on spam score
+      if (score === 0) {
+        score0.push({ ...formData, score, reasons, score_manual });
+      } else if (score < 2) {
+        score0to2.push({ ...formData, score, reasons, score_manual });
+      } else {
+        score2plus.push({ ...formData, score, reasons, score_manual });
+      }
+
+      // Compare with manual score
+      if ((isSpam && score_manual === 'spam') || (!isSpam && score_manual === 'clean')) {
         correct++;
       } else {
         incorrect++;
-        console.log('\x1b[31m%s\x1b[0m', '*** DIFFERENT RESULT ***');
+        differentRatings.push({ ...formData, score_manual, score, reasons });
       }
-
-      console.log('--------------------------\n');
     }
 
-    console.log(`Correct detections: ${correct}`);
-    console.log(`Incorrect detections: ${incorrect}`);
-    console.log(`Accuracy: ${(correct / submissions.length) * 100}%`);
+    console.log('\nProcessing complete. Generating report...\n');
+
+    // Section 1: Overall results split up by Spam Score
+    console.log('Section 1: Overall results split up by Spam Score');
+    console.log('\nSubmissions with Spam Score of 0:');
+    score0.forEach(s => console.log({ ...s, score_manual: s.score_manual }));
+
+    console.log('\nSubmissions with Spam Score between 0 and 2:');
+    score0to2.forEach(s => console.log({ ...s, score_manual: s.score_manual }, 'Reasons:', s.reasons.join(', ')));
+
+    console.log('\nSubmissions with Spam Score of 2 or greater:');
+    score2plus.forEach(s => console.log({ ...s, score_manual: s.score_manual }, 'Reasons:', s.reasons.join(', ')));
+
+    // Section 2: Comparison to the manual score
+    console.log('\nSection 2: Comparison to the manual score');
+    const totalSubmissions = submissions.length;
+    const sameRatingPercentage = (correct / totalSubmissions) * 100;
+
+    console.log(`Overall percentage that were the same as the manual score: ${sameRatingPercentage.toFixed(2)}%`);
+    console.log(`Number of submissions that were rated the same: ${correct}`);
+    console.log(`Number of submissions that were rated differently: ${incorrect}`);
+
+    console.log('\nSubmissions that were rated differently:');
+    differentRatings.forEach(s => {
+      console.log(s);
+      console.log('Reasons:', s.reasons.join(', '));
+      console.log('--------------------------');
+    });
   } catch (error) {
     console.error('Error during testing:', error);
   }
